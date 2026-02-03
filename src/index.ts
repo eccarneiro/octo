@@ -4,6 +4,7 @@ import { intro, outro } from "@clack/prompts";
 import color from "chalk";
 import figlet from "figlet";
 import { showMainMenu } from "./ui/menu.js";
+import { dataCommand } from "./commands/data.js";
 
 const program = new Command();
 
@@ -28,6 +29,12 @@ async function main() {
     .name("octo")
     .description("CLI para automação de conversões de mídia e dados")
     .version("0.0.1");
+  program
+    .command("data")
+    .description("Converte arquivos de dados (JSON <-> CSV <-> YAML)")
+    .argument("<file>", "Arquivo de entrada")
+    .requiredOption("-t, --to <format>", "Formato de saída: json, csv, yaml")
+    .action((file, options) => dataCommand(file, { to: options.to }));
 
   // --- REGISTRO DE COMANDOS (Para uso direto) ---
   //   program

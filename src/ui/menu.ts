@@ -1,4 +1,5 @@
 import { select, isCancel, cancel, text, outro } from "@clack/prompts";
+import { dataCommand } from "../commands/data.js"; // Importe o novo comando
 import color from "chalk";
 export async function showMainMenu() {
   const action = await select({
@@ -41,6 +42,9 @@ export async function showMainMenu() {
       console.log(color.yellow("\n🚧 Módulo em desenvolvimento..."));
       // await handleYoutubeFlow();
       break;
+    case "data":
+      await handleDataFlow();
+      break;
     default:
       outro("Funcionalidade ainda não implementada.");
   }
@@ -80,5 +84,27 @@ async function handleVideoFlow() {
 
   console.log("\n");
   console.log("Em desenvolvimento...");
-  //await videoCommand(pathInput as string, { preset: presetInput as string });
+}
+async function handleDataFlow() {
+  const fileInput = await text({
+    message: "Caminho do arquivo (JSON, CSV ou YAML):",
+    placeholder: "./data/users.json",
+    validate(value) {
+      if (!value) return "O caminho é obrigatório";
+    },
+  });
+  if (isCancel(fileInput)) return;
+
+  const formatInput = await select({
+    message: "Converter para qual formato?",
+    options: [
+      { value: "csv", label: "CSV", hint: "Para Excel/Planilhas" },
+      { value: "json", label: "JSON", hint: "Para APIs/Frontend" },
+      { value: "yaml", label: "YAML", hint: "Para Configs/DevOps" },
+    ],
+  });
+  if (isCancel(formatInput)) return;
+
+  console.log("\n");
+  await dataCommand(fileInput as string, { to: formatInput as any });
 }
