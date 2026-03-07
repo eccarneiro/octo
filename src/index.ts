@@ -6,6 +6,9 @@ import figlet from "figlet";
 import { showMainMenu } from "./ui/menu.js";
 import { dataCommand } from "./commands/data.js";
 import { youtubeCommand } from "./commands/youtube.js";
+import { videoCommand } from "./commands/video.js";
+import { docsCommand } from "./commands/docs.js";
+import { imageCommand } from "./commands/image.js";
 
 const program = new Command();
 
@@ -54,7 +57,56 @@ async function main() {
       const format = options.audio ? "audio" : "video";
       youtubeCommand(url, { format, quality: options.quality, outputDir: options.output });
     });
-
+  program
+    .command("video")
+    .description("Processamento de vídeo em lote (comprimir, converter, redimensionar)")
+    .requiredOption("-a, --action <action>", "Ação: compress, convert, resize")
+    .requiredOption("-i, --input <dir>", "Pasta de origem com os vídeos")
+    .option("-o, --output <dir>", "Pasta de destino (padrão: ~/Desktop)")
+    .option("-p, --preset <preset>", "Codec: h264, h265 (para compress)", "h264")
+    .option("-f, --format <format>", "Formato: mp4, mov, avi, webm (para convert)", "mp4")
+    .option("-r, --resolution <res>", "Resolução: 1080, 720, 480 (para resize)", "720")
+    .action((options) => {
+      videoCommand({
+        action: options.action,
+        inputDir: options.input,
+        outputDir: options.output,
+        preset: options.preset,
+        format: options.format,
+        resolution: options.resolution,
+      });
+    });
+  program
+    .command("docs")
+    .description("Converte documentos Markdown para HTML ou PDF")
+    .argument("<file>", "Arquivo Markdown de entrada")
+    .option("-t, --to <format>", "Formato: html, pdf", "html")
+    .option("-o, --output <dir>", "Pasta de destino (padrão: ~/Desktop)")
+    .action((file, options) => {
+      const action = options.to === "pdf" ? "md-to-pdf" : "md-to-html";
+      docsCommand({ action: action as any, inputFile: file, outputDir: options.output });
+    });
+  program
+    .command("image")
+    .description("Processamento de imagens em lote (comprimir, converter, redimensionar)")
+    .requiredOption("-a, --action <action>", "Ação: compress, convert, resize")
+    .requiredOption("-i, --input <dir>", "Pasta de origem com as imagens")
+    .option("-o, --output <dir>", "Pasta de destino (padrão: ~/Desktop)")
+    .option("-f, --format <format>", "Formato: png, jpg, webp, avif (para convert)", "webp")
+    .option("-q, --quality <n>", "Qualidade 1-100 (para compress)", "80")
+    .option("-w, --width <n>", "Largura em px (para resize)")
+    .option("--height <n>", "Altura em px (para resize)")
+    .action((options) => {
+      imageCommand({
+        action: options.action,
+        inputDir: options.input,
+        outputDir: options.output,
+        format: options.format,
+        quality: parseInt(options.quality),
+        width: options.width ? parseInt(options.width) : undefined,
+        height: options.height ? parseInt(options.height) : undefined,
+      });
+    });
 
   const args = process.argv.slice(2);
 

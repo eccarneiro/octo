@@ -1,183 +1,573 @@
-import { select, isCancel, cancel, text, outro } from "@clack/prompts";
+import { select, isCancel, cancel, text, outro, confirm, note } from "@clack/prompts";
 import os from "os";
 import path from "path";
 import fs from "fs-extra";
 import { dataCommand } from "../commands/data.js";
 import { youtubeCommand, isValidYoutubeUrl } from "../commands/youtube.js";
+import { videoCommand } from "../commands/video.js";
+import type { VideoAction } from "../commands/video.js";
+import { docsCommand } from "../commands/docs.js";
+import type { DocsAction } from "../commands/docs.js";
+import { imageCommand } from "../commands/image.js";
+import type { ImageAction } from "../commands/image.js";
 import color from "chalk";
+
+const BACK = "back";
+const desktopPath = path.join(os.homedir(), "Desktop");
+
+function backOption(label = "← Voltar") {
+  return { value: BACK, label: color.dim(label) };
+}
+
+// ── Menu Principal (loop) ───────────────────────────────────
+
 export async function showMainMenu() {
-  const action = await select({
-    message: "Escolha um módulo:",
-    options: [
-      {
-        value: "video",
-        label: "🎬 Vídeo Tools",
-        hint: "Comprimir, Converter e Redimensionar",
-      },
-      {
-        value: "youtube",
-        label: "📺 YouTube Downloader",
-        hint: "Baixar vídeo ou áudio",
-      },
-      {
-        value: "docs",
-        label: "📄 Documentos",
-        hint: "PDF, Docx, Conversões de Texto",
-      },
-      {
-        value: "data",
-        label: "💾 Dados & Utils",
-        hint: "JSON, CSV, Base64, Excel",
-      },
-      { value: "exit", label: "🚪 Sair" },
-    ],
-  });
-
-  if (isCancel(action) || action === "exit") {
-    cancel("Operação cancelada.");
-    process.exit(0);
-  }
-
-  switch (action) {
-    case "video":
-      await handleVideoFlow();
-      break;
-    case "youtube":
-      await handleYoutubeFlow();
-      break;
-    case "data":
-      await handleDataFlow();
-      break;
-    default:
-      outro("Funcionalidade ainda não implementada.");
-  }
-}
-
-async function handleVideoFlow() {
-  const pathInput = await text({
-    message: "Qual o caminho da pasta com os vídeos?",
-    placeholder: "./videos",
-    validate(value) {
-      if (value?.length === 0) return "O caminho é obrigatório!";
-    },
-  });
-
-  if (isCancel(pathInput)) return;
-
-  const presetInput = await select({
-    message: "Qual formato de saída?",
-    options: [
-      {
-        value: "h265",
-        label: "H.265 (HEVC)",
-        hint: "Melhor para Mobile/Web (Arquivo menor)",
-      },
-      { value: "h264", label: "H.264", hint: "Compatibilidade total" },
-      {
-        value: "MP4",
-        label: "MP4 (Compatível com todos os dispositivos)",
-        hint: "Videos em MP4 sem reencodificação",
-      },
-      { value: "MOV", label: "MOV (Formato Apple)", hint: "Vídeos em MOV" },
-      { value: "AVI", label: "AVI (Formato Antigo)", hint: "Vídeos em AVI" },
-    ],
-  });
-
-  if (isCancel(presetInput)) return;
-
-  console.log("\n");
-  console.log("Em desenvolvimento...");
-}
-async function handleDataFlow() {
-  const fileInput = await text({
-    message: "Caminho do arquivo (JSON, CSV ou YAML):",
-    placeholder: "./data/users.json",
-    validate(value) {
-      if (!value) return "O caminho é obrigatório";
-    },
-  });
-  if (isCancel(fileInput)) return;
-
-  const formatInput = await select({
-    message: "Converter para qual formato?",
-    options: [
-      { value: "csv", label: "CSV", hint: "Para Excel/Planilhas" },
-      { value: "json", label: "JSON", hint: "Para APIs/Frontend" },
-      { value: "yaml", label: "YAML", hint: "Para Configs/DevOps" },
-    ],
-  });
-  if (isCancel(formatInput)) return;
-
-  console.log("\n");
-  await dataCommand(fileInput as string, { to: formatInput as any });
-}
-
-async function handleYoutubeFlow() {
-  const urlInput = await text({
-    message: "Cole o link do YouTube:",
-    placeholder: "https://www.youtube.com/watch?v=...",
-    validate(value) {
-      if (!value || !isValidYoutubeUrl(value)) {
-        return "Link inválido. Aceito: youtube.com/watch, youtu.be, shorts, embed, live, music.youtube.com";
-      }
-    },
-  });
-
-  if (isCancel(urlInput)) return;
-
-  const formatInput = await select({
-    message: "O que você deseja baixar?",
-    options: [
-      {
-        value: "video",
-        label: "🎬 Vídeo (MP4)",
-        hint: "Baixa vídeo e áudio juntos",
-      },
-      { value: "audio", label: "🎵 Áudio (MP3)", hint: "Extrai apenas o som" },
-    ],
-  });
-
-  if (isCancel(formatInput)) return;
-
-  let quality: "best" | "1080" | "720" | "480" = "best";
-
-  if (formatInput === "video") {
-    const qualityInput = await select({
-      message: "Escolha a qualidade do vídeo:",
+  while (true) {
+    const action = await select({
+      message: "Escolha um módulo:",
       options: [
-        { value: "best", label: "🏆 Melhor disponível", hint: "Máxima qualidade" },
-        { value: "1080", label: "📺 1080p (Full HD)", hint: "Recomendado" },
-        { value: "720", label: "📱 720p (HD)", hint: "Bom equilíbrio" },
-        { value: "480", label: "💾 480p (SD)", hint: "Arquivo menor" },
+        { value: "video", label: "🎬 Vídeo Tools", hint: "Comprimir, Converter e Redimensionar" },
+        { value: "image", label: "🖼️  Imagem Tools", hint: "Redimensionar, Converter e Comprimir" },
+        { value: "youtube", label: "📺 YouTube Downloader", hint: "Baixar vídeo ou áudio" },
+        { value: "docs", label: "📄 Documentos", hint: "Markdown → HTML / PDF" },
+        { value: "data", label: "💾 Dados & Utils", hint: "JSON, CSV, YAML" },
+        { value: "exit", label: "🚪 Sair" },
       ],
     });
 
-    if (isCancel(qualityInput)) return;
-    quality = qualityInput as any;
+    if (isCancel(action) || action === "exit") {
+      cancel("Até a próxima! 👋");
+      process.exit(0);
+    }
+
+    switch (action) {
+      case "video":
+        await handleVideoFlow();
+        break;
+      case "image":
+        await handleImageFlow();
+        break;
+      case "youtube":
+        await handleYoutubeFlow();
+        break;
+      case "docs":
+        await handleDocsFlow();
+        break;
+      case "data":
+        await handleDataFlow();
+        break;
+    }
   }
-
-  const desktopPath = path.join(os.homedir(), "Desktop");
-
-  const outputInput = await text({
-    message: "Onde salvar o download?",
-    placeholder: desktopPath,
-    defaultValue: desktopPath,
-    validate(value) {
-      if (!value) return "O caminho é obrigatório!";
-      const resolved = path.resolve(value);
-      const parent = path.dirname(resolved);
-      if (!fs.existsSync(parent)) {
-        return `Pasta não encontrada: ${parent}\nDigite um caminho válido.`;
-      }
-    },
-  });
-
-  if (isCancel(outputInput)) return;
-
-  await youtubeCommand(urlInput as string, {
-    format: formatInput as any,
-    quality,
-    outputDir: outputInput as string,
-  });
 }
 
+// ── YouTube Flow ────────────────────────────────────────────
+
+async function handleYoutubeFlow() {
+  let step = 0;
+  let url = "";
+  let format: "video" | "audio" = "video";
+  let quality: "best" | "1080" | "720" | "480" = "best";
+  let outputDir = desktopPath;
+
+  while (step >= 0) {
+    switch (step) {
+      // Step 0: URL
+      case 0: {
+        const input = await text({
+          message: "Cole o link do YouTube:",
+          placeholder: "https://www.youtube.com/watch?v=...",
+          defaultValue: url || undefined,
+          validate(value) {
+            if (!value || !isValidYoutubeUrl(value)) {
+              return "Link inválido. Aceito: youtube.com/watch, youtu.be, shorts, embed, live, music.youtube.com";
+            }
+          },
+        });
+        if (isCancel(input)) { step = -1; break; }
+        url = input as string;
+        step++;
+        break;
+      }
+
+      // Step 1: Formato (vídeo ou áudio)
+      case 1: {
+        const input = await select({
+          message: "O que você deseja baixar?",
+          options: [
+            { value: "video", label: "🎬 Vídeo (MP4)", hint: "Baixa vídeo e áudio juntos" },
+            { value: "audio", label: "🎵 Áudio (MP3)", hint: "Extrai apenas o som" },
+            backOption(),
+          ],
+        });
+        if (isCancel(input) || input === BACK) { step--; break; }
+        format = input as any;
+        step = format === "video" ? 2 : 3; // pula qualidade se áudio
+        break;
+      }
+
+      // Step 2: Qualidade (só para vídeo)
+      case 2: {
+        const input = await select({
+          message: "Escolha a qualidade do vídeo:",
+          options: [
+            { value: "best", label: "🏆 Melhor disponível", hint: "Máxima qualidade" },
+            { value: "1080", label: "📺 1080p (Full HD)", hint: "Recomendado" },
+            { value: "720", label: "📱 720p (HD)", hint: "Bom equilíbrio" },
+            { value: "480", label: "💾 480p (SD)", hint: "Arquivo menor" },
+            backOption(),
+          ],
+        });
+        if (isCancel(input) || input === BACK) { step = 1; break; }
+        quality = input as any;
+        step++;
+        break;
+      }
+
+      // Step 3: Pasta de destino
+      case 3: {
+        const input = await text({
+          message: "Onde salvar o download?",
+          placeholder: desktopPath,
+          defaultValue: outputDir,
+          validate(value) {
+            if (!value) return "O caminho é obrigatório!";
+            const parent = path.dirname(path.resolve(value));
+            if (!fs.existsSync(parent)) {
+              return `Pasta não encontrada: ${parent}\nDigite um caminho válido.`;
+            }
+          },
+        });
+        if (isCancel(input)) { step = format === "video" ? 2 : 1; break; }
+        outputDir = input as string;
+        step++;
+        break;
+      }
+
+      // Step 4: Executar
+      case 4: {
+        await youtubeCommand(url, { format, quality, outputDir });
+        return;
+      }
+    }
+  }
+}
+
+// ── Video Tools Flow ────────────────────────────────────────
+
+async function handleVideoFlow() {
+  let step = 0;
+  let action: VideoAction = "compress";
+  let inputDir = "";
+  let outputDir = desktopPath;
+  let preset: "h264" | "h265" = "h264";
+  let format: "mp4" | "mov" | "avi" | "webm" = "mp4";
+  let resolution: "1080" | "720" | "480" = "720";
+
+  while (step >= 0) {
+    switch (step) {
+      // Step 0: Ação
+      case 0: {
+        const input = await select({
+          message: "O que deseja fazer?",
+          options: [
+            { value: "compress", label: "🗜️  Comprimir", hint: "Reduz tamanho do arquivo (H.264/H.265)" },
+            { value: "convert", label: "🔄 Converter formato", hint: "MP4, MOV, AVI, WebM" },
+            { value: "resize", label: "📏 Redimensionar", hint: "1080p, 720p, 480p" },
+            backOption(),
+          ],
+        });
+        if (isCancel(input) || input === BACK) { step = -1; break; }
+        action = input as VideoAction;
+        step++;
+        break;
+      }
+
+      // Step 1: Pasta de origem
+      case 1: {
+        const input = await text({
+          message: "Pasta com os vídeos de origem:",
+          placeholder: "./videos",
+          defaultValue: inputDir || undefined,
+          validate(value) {
+            if (!value) return "O caminho é obrigatório!";
+            const resolved = path.resolve(value);
+            if (!fs.existsSync(resolved)) {
+              return `Pasta não encontrada: ${resolved}\nDigite um caminho válido.`;
+            }
+          },
+        });
+        if (isCancel(input)) { step--; break; }
+        inputDir = input as string;
+        step++;
+        break;
+      }
+
+      // Step 2: Pasta de destino
+      case 2: {
+        const input = await text({
+          message: "Pasta de destino (onde salvar):",
+          placeholder: desktopPath,
+          defaultValue: outputDir,
+          validate(value) {
+            if (!value) return "O caminho é obrigatório!";
+            const parent = path.dirname(path.resolve(value));
+            if (!fs.existsSync(parent)) {
+              return `Pasta não encontrada: ${parent}\nDigite um caminho válido.`;
+            }
+          },
+        });
+        if (isCancel(input)) { step--; break; }
+        outputDir = input as string;
+        step++;
+        break;
+      }
+
+      // Step 3: Aviso + Confirmação
+      case 3: {
+        note(
+          color.yellow("⚠️  Todos os vídeos da pasta serão processados!"),
+          "🎥 Atenção",
+        );
+        const shouldContinue = await confirm({ message: "Deseja continuar?" });
+        if (isCancel(shouldContinue) || !shouldContinue) { step--; break; }
+        step++;
+        break;
+      }
+
+      // Step 4: Opções específicas da ação
+      case 4: {
+        if (action === "compress") {
+          const input = await select({
+            message: "Qual codec usar?",
+            options: [
+              { value: "h264", label: "H.264", hint: "Compatibilidade total" },
+              { value: "h265", label: "H.265 (HEVC)", hint: "Arquivo menor, mais lento" },
+              backOption(),
+            ],
+          });
+          if (isCancel(input) || input === BACK) { step = 2; break; }
+          preset = input as any;
+        }
+
+        if (action === "convert") {
+          const input = await select({
+            message: "Converter para qual formato?",
+            options: [
+              { value: "mp4", label: "MP4", hint: "Compatível com tudo" },
+              { value: "mov", label: "MOV", hint: "Formato Apple" },
+              { value: "avi", label: "AVI", hint: "Formato clássico" },
+              { value: "webm", label: "WebM", hint: "Otimizado para web" },
+              backOption(),
+            ],
+          });
+          if (isCancel(input) || input === BACK) { step = 2; break; }
+          format = input as any;
+        }
+
+        if (action === "resize") {
+          const input = await select({
+            message: "Qual resolução?",
+            options: [
+              { value: "1080", label: "📺 1080p (Full HD)" },
+              { value: "720", label: "📱 720p (HD)" },
+              { value: "480", label: "💾 480p (SD)" },
+              backOption(),
+            ],
+          });
+          if (isCancel(input) || input === BACK) { step = 2; break; }
+          resolution = input as any;
+        }
+
+        step++;
+        break;
+      }
+
+      // Step 5: Executar
+      case 5: {
+        await videoCommand({ action, inputDir, outputDir, preset, format, resolution });
+        return;
+      }
+    }
+  }
+}
+
+// ── Data Flow ───────────────────────────────────────────────
+
+async function handleDataFlow() {
+  let step = 0;
+  let filePath = "";
+  let format: "csv" | "json" | "yaml" = "csv";
+
+  while (step >= 0) {
+    switch (step) {
+      // Step 0: Arquivo
+      case 0: {
+        const input = await text({
+          message: "Caminho do arquivo (JSON, CSV ou YAML):",
+          placeholder: "./data/users.json",
+          defaultValue: filePath || undefined,
+          validate(value) {
+            if (!value) return "O caminho é obrigatório";
+          },
+        });
+        if (isCancel(input)) { step = -1; break; }
+        filePath = input as string;
+        step++;
+        break;
+      }
+
+      // Step 1: Formato de saída
+      case 1: {
+        const input = await select({
+          message: "Converter para qual formato?",
+          options: [
+            { value: "csv", label: "CSV", hint: "Para Excel/Planilhas" },
+            { value: "json", label: "JSON", hint: "Para APIs/Frontend" },
+            { value: "yaml", label: "YAML", hint: "Para Configs/DevOps" },
+            backOption(),
+          ],
+        });
+        if (isCancel(input) || input === BACK) { step--; break; }
+        format = input as any;
+        step++;
+        break;
+      }
+
+      // Step 2: Executar
+      case 2: {
+        console.log("\n");
+        await dataCommand(filePath, { to: format });
+        return;
+      }
+    }
+  }
+}
+
+// ── Documentos Flow ─────────────────────────────────────────
+
+async function handleDocsFlow() {
+  let step = 0;
+  let action: DocsAction = "md-to-html";
+  let inputFile = "";
+  let outputDir = desktopPath;
+
+  while (step >= 0) {
+    switch (step) {
+      // Step 0: Ação
+      case 0: {
+        const input = await select({
+          message: "O que deseja fazer?",
+          options: [
+            { value: "md-to-html", label: "🌐 Markdown → HTML", hint: "Gera página web estilizada" },
+            { value: "md-to-pdf", label: "📄 Markdown → PDF", hint: "HTML imprimível (Ctrl+P no navegador)" },
+            backOption(),
+          ],
+        });
+        if (isCancel(input) || input === BACK) { step = -1; break; }
+        action = input as DocsAction;
+        step++;
+        break;
+      }
+
+      // Step 1: Arquivo de entrada
+      case 1: {
+        const input = await text({
+          message: "Caminho do arquivo Markdown:",
+          placeholder: "./README.md",
+          defaultValue: inputFile || undefined,
+          validate(value) {
+            if (!value) return "O caminho é obrigatório!";
+            const resolved = path.resolve(value);
+            if (!fs.existsSync(resolved)) {
+              return `Arquivo não encontrado: ${resolved}`;
+            }
+            const ext = path.extname(resolved).toLowerCase();
+            if (![".md", ".markdown", ".mdx"].includes(ext)) {
+              return "Apenas arquivos Markdown (.md, .markdown, .mdx) são aceitos.";
+            }
+          },
+        });
+        if (isCancel(input)) { step--; break; }
+        inputFile = input as string;
+        step++;
+        break;
+      }
+
+      // Step 2: Pasta de saída
+      case 2: {
+        const input = await text({
+          message: "Pasta de destino:",
+          placeholder: desktopPath,
+          defaultValue: outputDir,
+          validate(value) {
+            if (!value) return "O caminho é obrigatório!";
+            const parent = path.dirname(path.resolve(value));
+            if (!fs.existsSync(parent)) {
+              return `Pasta não encontrada: ${parent}\nDigite um caminho válido.`;
+            }
+          },
+        });
+        if (isCancel(input)) { step--; break; }
+        outputDir = input as string;
+        step++;
+        break;
+      }
+
+      // Step 3: Executar
+      case 3: {
+        await docsCommand({ action, inputFile, outputDir });
+        return;
+      }
+    }
+  }
+}
+
+// ── Image Tools Flow ────────────────────────────────────────
+
+async function handleImageFlow() {
+  let step = 0;
+  let action: ImageAction = "compress";
+  let inputDir = "";
+  let outputDir = desktopPath;
+  let width: number | undefined;
+  let height: number | undefined;
+  let format: "png" | "jpg" | "webp" | "avif" = "webp";
+  let quality = 80;
+
+  while (step >= 0) {
+    switch (step) {
+      // Step 0: Ação
+      case 0: {
+        const input = await select({
+          message: "O que deseja fazer?",
+          options: [
+            { value: "compress", label: "🗜️  Comprimir", hint: "Reduz tamanho do arquivo" },
+            { value: "convert", label: "🔄 Converter formato", hint: "PNG, JPG, WebP, AVIF" },
+            { value: "resize", label: "📏 Redimensionar", hint: "Alterar dimensões" },
+            backOption(),
+          ],
+        });
+        if (isCancel(input) || input === BACK) { step = -1; break; }
+        action = input as ImageAction;
+        step++;
+        break;
+      }
+
+      // Step 1: Pasta de origem
+      case 1: {
+        const input = await text({
+          message: "Pasta com as imagens de origem:",
+          placeholder: "./images",
+          defaultValue: inputDir || undefined,
+          validate(value) {
+            if (!value) return "O caminho é obrigatório!";
+            const resolved = path.resolve(value);
+            if (!fs.existsSync(resolved)) {
+              return `Pasta não encontrada: ${resolved}\nDigite um caminho válido.`;
+            }
+          },
+        });
+        if (isCancel(input)) { step--; break; }
+        inputDir = input as string;
+        step++;
+        break;
+      }
+
+      // Step 2: Pasta de destino
+      case 2: {
+        const input = await text({
+          message: "Pasta de destino (onde salvar):",
+          placeholder: desktopPath,
+          defaultValue: outputDir,
+          validate(value) {
+            if (!value) return "O caminho é obrigatório!";
+            const parent = path.dirname(path.resolve(value));
+            if (!fs.existsSync(parent)) {
+              return `Pasta não encontrada: ${parent}\nDigite um caminho válido.`;
+            }
+          },
+        });
+        if (isCancel(input)) { step--; break; }
+        outputDir = input as string;
+        step++;
+        break;
+      }
+
+      // Step 3: Aviso + Confirmação
+      case 3: {
+        note(
+          color.yellow("⚠️  Todas as imagens da pasta serão processadas!"),
+          "🖼️ Atenção",
+        );
+        const shouldContinue = await confirm({ message: "Deseja continuar?" });
+        if (isCancel(shouldContinue) || !shouldContinue) { step--; break; }
+        step++;
+        break;
+      }
+
+      // Step 4: Opções específicas
+      case 4: {
+        if (action === "compress") {
+          const input = await select({
+            message: "Qualidade da compressão:",
+            options: [
+              { value: "90", label: "🏆 Alta (90%)", hint: "Pouca perda de qualidade" },
+              { value: "80", label: "⚡ Média (80%)", hint: "Bom equilíbrio" },
+              { value: "60", label: "💾 Baixa (60%)", hint: "Arquivo bem menor" },
+              { value: "40", label: "📦 Mínima (40%)", hint: "Máxima redução" },
+              backOption(),
+            ],
+          });
+          if (isCancel(input) || input === BACK) { step = 2; break; }
+          quality = parseInt(input as string);
+        }
+
+        if (action === "convert") {
+          const input = await select({
+            message: "Converter para qual formato?",
+            options: [
+              { value: "webp", label: "WebP", hint: "Moderno, menor tamanho" },
+              { value: "png", label: "PNG", hint: "Sem perda de qualidade" },
+              { value: "jpg", label: "JPG", hint: "Compatível com tudo" },
+              { value: "avif", label: "AVIF", hint: "Mais moderno e eficiente" },
+              backOption(),
+            ],
+          });
+          if (isCancel(input) || input === BACK) { step = 2; break; }
+          format = input as any;
+        }
+
+        if (action === "resize") {
+          const widthInput = await text({
+            message: "Largura (px) — deixe vazio para manter proporção:",
+            placeholder: "800",
+          });
+          if (isCancel(widthInput)) { step = 2; break; }
+
+          const heightInput = await text({
+            message: "Altura (px) — deixe vazio para manter proporção:",
+            placeholder: "600",
+          });
+          if (isCancel(heightInput)) { step = 2; break; }
+
+          width = widthInput ? parseInt(widthInput as string) || undefined : undefined;
+          height = heightInput ? parseInt(heightInput as string) || undefined : undefined;
+
+          if (!width && !height) {
+            outro(color.red("Informe pelo menos largura ou altura!"));
+            break;
+          }
+        }
+
+        step++;
+        break;
+      }
+
+      // Step 5: Executar
+      case 5: {
+        await imageCommand({ action, inputDir, outputDir, width, height, format, quality });
+        return;
+      }
+    }
+  }
+}
