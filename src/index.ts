@@ -1,10 +1,11 @@
 #!/usr/bin/env bun
 import { Command } from "commander";
-import { intro, outro } from "@clack/prompts";
+import { intro } from "@clack/prompts";
 import color from "chalk";
 import figlet from "figlet";
 import { showMainMenu } from "./ui/menu.js";
 import { dataCommand } from "./commands/data.js";
+import { youtubeCommand } from "./commands/youtube.js";
 
 const program = new Command();
 
@@ -35,18 +36,26 @@ async function main() {
     .argument("<file>", "Arquivo de entrada")
     .requiredOption("-t, --to <format>", "Formato de saída: json, csv, yaml")
     .action((file, options) => dataCommand(file, { to: options.to }));
+  program
+    .command("youtube")
+    .description("Baixa vídeos ou áudios do YouTube")
+    .argument("<url>", "URL do vídeo no YouTube")
+    .option("-a, --audio", "Baixar apenas áudio (MP3)")
+    .option(
+      "-q, --quality <quality>",
+      "Qualidade do vídeo: best, 1080, 720, 480",
+      "best",
+    )
+    .option(
+      "-o, --output <dir>",
+      "Diretório de saída (padrão: ~/Desktop)",
+    )
+    .action((url, options) => {
+      const format = options.audio ? "audio" : "video";
+      youtubeCommand(url, { format, quality: options.quality, outputDir: options.output });
+    });
 
-  // --- REGISTRO DE COMANDOS (Para uso direto) ---
-  //   program
-  //     .command("video")
-  //     .description("Processamento de vídeo em lote")
-  //     .argument("<path>", "Caminho da pasta")
-  //     .option("-p, --preset <type>", "h265 (padrão) ou h264", "h265")
-  //     .action(console.log); // Substitua por videoCommand depois
 
-  // Adicionaremos os outros comandos aqui depois...
-
-  // Lógica de Entrada
   const args = process.argv.slice(2);
 
   if (args.length > 0) {
