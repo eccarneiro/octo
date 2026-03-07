@@ -1,36 +1,36 @@
 # 🐙 Octo CLI
 
-> **The Ultimate Converter Engine** — Uma CLI poderosa para automação de conversão de mídia e dados.
+> **The Ultimate Converter Engine** — A powerful CLI for media and data conversion automation.
 
-Octo CLI é uma ferramenta de linha de comando construída com **Bun** e **TypeScript** que reúne em um só lugar tudo o que você precisa para converter, comprimir e processar vídeos, imagens, documentos e dados.
+Octo CLI is a command-line tool built with **Bun** and **TypeScript** that brings everything you need to convert, compress, and process videos, images, documents, and data — all in one place.
 
 ---
 
 ## ✨ Features
 
-| Módulo | Funcionalidades |
+| Module | Capabilities |
 |---|---|
-| 🎬 **Vídeo Tools** | Comprimir (H.264/H.265), Converter (MP4, MOV, AVI, WebM), Redimensionar (1080p, 720p, 480p) |
-| 🖼️ **Imagem Tools** | Comprimir (qualidade configurável), Converter (PNG, JPG, WebP, AVIF), Redimensionar (largura/altura) |
-| 📺 **YouTube Downloader** | Download de vídeo (MP4) e áudio (MP3), escolha de qualidade, preview de metadados |
-| 📄 **Documentos** | Markdown → HTML estilizado, Markdown → PDF (via HTML imprimível) |
-| 💾 **Dados & Utils** | Conversão entre JSON ↔ CSV ↔ YAML |
+| 🎬 **Video Tools** | Compress (H.264/H.265), Convert (MP4, MOV, AVI, WebM), Resize (1080p, 720p, 480p) |
+| 🖼️ **Image Tools** | Compress (configurable quality), Convert (PNG, JPG, WebP, AVIF), Resize (width/height) |
+| 📺 **YouTube Downloader** | Video (MP4) & audio (MP3) download, quality selection, metadata preview |
+| 📄 **Documents** | Markdown → Styled HTML, Markdown → PDF (printable HTML) |
+| 💾 **Data & Utils** | Convert between JSON ↔ CSV ↔ YAML |
 
 **Extras:**
-- 🧭 Menu interativo com navegação **← Voltar**
-- 📊 Barra de progresso em tempo real para downloads e processamento
-- 📂 Processamento em lote (pasta inteira de vídeos/imagens)
-- 🎯 Detecção automática de `yt-dlp` e `ffmpeg` no sistema
+- 🧭 Interactive menu with **← Back** navigation
+- 📊 Real-time progress bar for downloads and processing
+- 📂 Batch processing (entire folder of videos/images)
+- 🎯 Auto-detection of `yt-dlp` and `ffmpeg` on the system
 
 ---
 
-## 🚀 Instalação
+## 🚀 Installation
 
-### Pré-requisitos
+### Prerequisites
 
 - [Bun](https://bun.sh/) (runtime)
-- [FFmpeg](https://ffmpeg.org/) (para processamento de vídeo)
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) (para download do YouTube)
+- [FFmpeg](https://ffmpeg.org/) (for video processing)
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) (for YouTube downloads)
 
 ```bash
 # macOS
@@ -42,25 +42,25 @@ sudo apt install ffmpeg
 pip install yt-dlp
 ```
 
-### Setup do projeto
+### Project Setup
 
 ```bash
-git clone https://github.com/seu-usuario/octo.git
+git clone https://github.com/your-username/octo.git
 cd octo
 bun install
 ```
 
 ---
 
-## 📖 Uso
+## 📖 Usage
 
-### Menu Interativo (recomendado)
+### Interactive Menu (recommended)
 
 ```bash
 bun run dev
 ```
 
-Abre o menu interativo onde você navega com as setas do teclado e seleciona as opções:
+Opens the interactive menu where you navigate with arrow keys and select options:
 
 ```
    ____  ________________     ________    ____
@@ -71,118 +71,118 @@ Abre o menu interativo onde você navega com as setas do teclado e seleciona as 
 
  v0.0.1 • The Ultimate Converter Engine
 
-┌  Olá! Como posso te ajudar hoje?
+┌  Hello! How can I help you today?
 │
-◇  Escolha um módulo:
-│  🎬 Vídeo Tools
-│  🖼️  Imagem Tools
+◇  Choose a module:
+│  🎬 Video Tools
+│  🖼️  Image Tools
 │  📺 YouTube Downloader
-│  📄 Documentos
-│  💾 Dados & Utils
-│  🚪 Sair
+│  📄 Documents
+│  💾 Data & Utils
+│  🚪 Exit
 ```
 
-### Comandos Diretos (CLI)
+### Direct Commands (CLI)
 
 #### 📺 YouTube
 
 ```bash
-# Download de vídeo (melhor qualidade)
+# Download video (best quality)
 octo youtube https://youtube.com/watch?v=...
 
-# Download de áudio (MP3)
+# Download audio only (MP3)
 octo youtube https://youtube.com/watch?v=... -a
 
-# Vídeo em 720p, salvar em pasta específica
+# Video at 720p, save to specific folder
 octo youtube https://youtube.com/watch?v=... -q 720 -o ~/Videos
 ```
 
-#### 🎬 Vídeo
+#### 🎬 Video
 
 ```bash
-# Comprimir com H.265
+# Compress with H.265
 octo video -a compress -i ./videos -o ./output -p h265
 
-# Converter para WebM
+# Convert to WebM
 octo video -a convert -i ./videos -o ./output -f webm
 
-# Redimensionar para 720p
+# Resize to 720p
 octo video -a resize -i ./videos -o ./output -r 720
 ```
 
-#### 🖼️ Imagens
+#### 🖼️ Images
 
 ```bash
-# Comprimir imagens (qualidade 60%)
+# Compress images (60% quality)
 octo image -a compress -i ./imgs -o ./output -q 60
 
-# Converter para WebP
+# Convert to WebP
 octo image -a convert -i ./imgs -o ./output -f webp
 
-# Redimensionar para 800px de largura
+# Resize to 800px width
 octo image -a resize -i ./imgs -o ./output -w 800
 ```
 
-#### 📄 Documentos
+#### 📄 Documents
 
 ```bash
-# Markdown para HTML
+# Markdown to HTML
 octo docs ./README.md --to html
 
-# Markdown para PDF (HTML imprimível)
+# Markdown to PDF (printable HTML)
 octo docs ./README.md --to pdf -o ~/Desktop
 ```
 
-#### 💾 Dados
+#### 💾 Data
 
 ```bash
-# JSON para CSV
-octo data ./dados.json -t csv
+# JSON to CSV
+octo data ./data.json -t csv
 
-# CSV para YAML
-octo data ./planilha.csv -t yaml
+# CSV to YAML
+octo data ./spreadsheet.csv -t yaml
 
-# YAML para JSON
+# YAML to JSON
 octo data ./config.yaml -t json
 ```
 
 ---
 
-## 🛠️ Stack Tecnológica
+## 🛠️ Tech Stack
 
-| Tecnologia | Papel |
+| Technology | Role |
 |---|---|
-| **Bun** | Runtime e bundler |
-| **TypeScript** | Tipagem estática |
-| **Commander.js** | Parsing de comandos CLI |
-| **@clack/prompts** | Interface interativa (TUI) |
-| **fluent-ffmpeg** | Processamento de vídeo |
-| **Sharp** | Processamento de imagens |
-| **youtube-dl-exec** | Download do YouTube |
-| **marked** | Parser de Markdown |
-| **Listr2** | Task runner com progresso |
-| **Chalk + Figlet** | Cores e branding |
+| **Bun** | Runtime & bundler |
+| **TypeScript** | Static typing |
+| **Commander.js** | CLI command parsing |
+| **@clack/prompts** | Interactive interface (TUI) |
+| **fluent-ffmpeg** | Video processing |
+| **Sharp** | Image processing |
+| **youtube-dl-exec** | YouTube downloads |
+| **marked** | Markdown parser |
+| **Listr2** | Task runner with progress |
+| **Chalk + Figlet** | Colors & branding |
 
 ---
 
 ## 📦 Build
 
-Para compilar para um binário standalone:
+Compile to a standalone binary:
 
 ```bash
 bun run build
 ```
 
-Gera um executável `octo` que pode ser usado sem o Bun instalado.
+Generates an `octo` executable that can be used without Bun installed.
 
 ---
 
-## 📄 Licença
+## 📄 License
 
 MIT
 
 ---
 
 <p align="center">
-  Feito com 🐙 por <a href="https://github.com/seu-usuario">Emanuel Corrêa</a>
+  Made with 🐙 by <a href="https://github.com/your-username">Emanuel Corrêa</a>
 </p>
