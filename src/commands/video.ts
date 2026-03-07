@@ -9,7 +9,6 @@ import { path as ffmpegPath } from "@ffmpeg-installer/ffmpeg";
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
-// ── Interfaces ──────────────────────────────────────────────
 
 export type VideoAction = "compress" | "convert" | "resize";
 
@@ -22,7 +21,6 @@ export interface VideoOptions {
   resolution?: "1080" | "720" | "480";
 }
 
-// ── Extensões de vídeo suportadas ───────────────────────────
 
 const VIDEO_EXTENSIONS = [".mp4", ".mov", ".avi", ".mkv", ".webm", ".m4v", ".flv", ".wmv"];
 
@@ -30,7 +28,6 @@ function isVideoFile(file: string): boolean {
   return VIDEO_EXTENSIONS.includes(path.extname(file).toLowerCase());
 }
 
-// ── Helpers ─────────────────────────────────────────────────
 
 function getVideoFiles(dir: string): string[] {
   if (!fs.existsSync(dir)) return [];
@@ -46,9 +43,6 @@ function buildProgressBar(percent: number, width = 25): string {
   return color.cyan("█".repeat(filled)) + color.dim("░".repeat(empty));
 }
 
-/**
- * Processa um único vídeo com ffmpeg, retornando uma Promise.
- */
 function processVideo(
   inputFile: string,
   outputFile: string,
@@ -71,7 +65,6 @@ function processVideo(
   });
 }
 
-// ── Configurações por ação ──────────────────────────────────
 
 function configureCompress(
   cmd: ffmpeg.FfmpegCommand,
@@ -85,7 +78,6 @@ function configureCompress(
       .audioCodec("aac")
       .audioBitrate("128k");
   }
-  // h264
   return cmd
     .videoCodec("libx264")
     .addOutputOption("-crf", "23")
@@ -126,7 +118,6 @@ function configureResize(
     .addOutputOption("-vf", scales[resolution]!);
 }
 
-// ── Labels ──────────────────────────────────────────────────
 
 function getActionLabel(options: VideoOptions): string {
   switch (options.action) {
@@ -146,13 +137,11 @@ function getOutputExtension(options: VideoOptions): string {
   return ".mp4";
 }
 
-// ── Comando principal ───────────────────────────────────────
 
 export const videoCommand = async (options: VideoOptions) => {
   const inputDir = path.resolve(options.inputDir);
   const outputDir = path.resolve(options.outputDir);
 
-  // Validar pasta de origem
   if (!fs.existsSync(inputDir)) {
     console.error(color.red(`\n❌ Pasta de origem não encontrada: ${inputDir}\n`));
     return;
@@ -166,7 +155,6 @@ export const videoCommand = async (options: VideoOptions) => {
     return;
   }
 
-  // Criar pasta de saída
   try {
     fs.ensureDirSync(outputDir);
   } catch {
@@ -183,7 +171,6 @@ export const videoCommand = async (options: VideoOptions) => {
   console.log(color.dim(`⚙️  Ação:    ${actionLabel}`));
   console.log(color.dim(`🎬 Vídeos:  ${videoFiles.length} arquivo(s)\n`));
 
-  // Criar tasks individuais para cada vídeo
   const tasks = new Listr(
     videoFiles.map((file, index) => {
       const baseName = path.basename(file, path.extname(file));

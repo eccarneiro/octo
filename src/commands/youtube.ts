@@ -13,7 +13,6 @@ function findYtDlpPath(): string {
     const result = execSync("which yt-dlp", { encoding: "utf-8" }).trim();
     if (result) return result;
   } catch {
-    // which falha se yt-dlp não está no PATH — fallback abaixo
   }
 
   const commonPaths = [
@@ -53,10 +52,6 @@ interface VideoInfo {
 }
 
 
-/**
- * Valida se a URL é um link válido do YouTube.
- * Aceita: youtube.com/watch, youtu.be, shorts, embed, live, e music.
- */
 export function isValidYoutubeUrl(url: string): boolean {
   const patterns = [
     /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=[\w-]+/,
@@ -87,9 +82,6 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
-/**
- * Busca metadados do vídeo.
- */
 async function getVideoInfo(url: string): Promise<VideoInfo> {
   const result = (await youtubeDl(url, {
     dumpSingleJson: true,
@@ -108,9 +100,6 @@ async function getVideoInfo(url: string): Promise<VideoInfo> {
   };
 }
 
-/**
- * Retorna o format string do yt-dlp com base na qualidade escolhida.
- */
 function getFormatString(quality: string): string {
   switch (quality) {
     case "1080":
@@ -125,9 +114,6 @@ function getFormatString(quality: string): string {
   }
 }
 
-/**
- * Extrai mensagem de erro legível do yt-dlp.
- */
 function extractErrorMessage(error: any): string {
   const raw =
     error.stderr ||
@@ -136,13 +122,11 @@ function extractErrorMessage(error: any): string {
     (typeof error === "string" ? error : "");
 
   if (!raw || raw.trim() === "") {
-    // Se nenhuma saída, logar o erro inteiro para debug
     console.error(color.dim("\n🔍 Debug — Objeto de erro completo:"));
     console.error(color.dim(JSON.stringify(error, null, 2)));
     return "Erro desconhecido. Verifique se o yt-dlp está instalado e atualizado.";
   }
 
-  // Extrair apenas a linha de ERROR do yt-dlp
   const errorLines = raw
     .split("\n")
     .filter((line: string) => line.includes("ERROR") || line.includes("error"));
@@ -154,9 +138,6 @@ function extractErrorMessage(error: any): string {
   return raw.trim();
 }
 
-/**
- * Executa o download com progresso via subprocess.
- */
 function downloadWithProgress(
   url: string,
   flags: any,
@@ -165,7 +146,6 @@ function downloadWithProgress(
   return new Promise((resolve, reject) => {
     const subprocess = youtubeDl.exec(url, flags);
 
-    // yt-dlp envia progresso para stderr
     subprocess.stderr?.on("data", (chunk: Buffer) => {
       const lines = chunk.toString().split("\n").filter(Boolean);
       for (const line of lines) {
@@ -186,12 +166,7 @@ function downloadWithProgress(
   });
 }
 
-/**
- * Faz parse da linha de progresso do yt-dlp.
- * Exemplo: "[download]  45.2% of 10.50MiB at 2.30MiB/s ETA 00:03"
- */
 function parseProgressLine(line: string): string | null {
-  // Padrão de progresso de download
   const progressMatch = line.match(
     /\[download\]\s+([\d.]+)%\s+of\s+~?([\d.]+\S+)\s+at\s+([\d.]+\S+)\s+ETA\s+(\S+)/,
   );
@@ -202,22 +177,18 @@ function parseProgressLine(line: string): string | null {
     return `${bar} ${color.cyan(`${pct.toFixed(1)}%`)} de ${size} • ${speed}/s • ETA ${eta}`;
   }
 
-  // Quando o download está 100%
   if (line.includes("[download] 100%")) {
     return `${buildProgressBar(100)} ${color.green("100%")} — Download completo!`;
   }
 
-  // Fase de merge
   if (line.includes("[Merger]") || line.includes("[Merger]")) {
     return `🔧 Unindo vídeo e áudio...`;
   }
 
-  // Fase de extração de áudio
   if (line.includes("[ExtractAudio]")) {
     return `🎵 Extraindo áudio...`;
   }
 
-  // Já existe
   if (line.includes("has already been downloaded")) {
     return `✅ Arquivo já existe, pulando download.`;
   }
@@ -225,9 +196,6 @@ function parseProgressLine(line: string): string | null {
   return null;
 }
 
-/**
- * Constrói uma barra de progresso visual.
- */
 function buildProgressBar(percent: number, width = 25): string {
   const filled = Math.round((percent / 100) * width);
   const empty = width - filled;
@@ -236,7 +204,6 @@ function buildProgressBar(percent: number, width = 25): string {
   return color.cyan(filledBar) + color.dim(emptyBar);
 }
 
-// ── Comando principal ───────────────────────────────────────
 
 export const youtubeCommand = async (url: string, options: YoutubeOptions) => {
   const defaultDir = path.join(os.homedir(), "Desktop");
@@ -317,7 +284,6 @@ export const youtubeCommand = async (url: string, options: YoutubeOptions) => {
         } catch (error: any) {
           const errorMessage = extractErrorMessage(error);
 
-          // Mensagens de erro mais amigáveis
           if (errorMessage.includes("Video unavailable")) {
             throw new Error(
               "Este vídeo não está disponível. Pode ser privado, excluído ou restrito por região.",
@@ -345,7 +311,6 @@ export const youtubeCommand = async (url: string, options: YoutubeOptions) => {
     },
   ]);
 
-  // Header
   console.log(
     color.dim(
       `\n🔗 URL: ${url}\n📂 Saída: ${downloadDir}\n⚙️  Modo: ${options.format.toUpperCase()}${options.format === "video" ? ` (${quality})` : ""}\n`,

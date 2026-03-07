@@ -20,9 +20,6 @@ function isMarkdownFile(file: string): boolean {
   return MARKDOWN_EXTENSIONS.includes(path.extname(file).toLowerCase());
 }
 
-/**
- * Gera um HTML completo com CSS para visualização bonita.
- */
 function wrapHtml(body: string, title: string): string {
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -31,7 +28,6 @@ function wrapHtml(body: string, title: string): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       max-width: 800px;

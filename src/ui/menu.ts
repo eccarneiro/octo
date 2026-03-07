@@ -19,7 +19,6 @@ function backOption(label = "← Voltar") {
   return { value: BACK, label: color.dim(label) };
 }
 
-// ── Menu Principal (loop) ───────────────────────────────────
 
 export async function showMainMenu() {
   while (true) {
@@ -60,7 +59,6 @@ export async function showMainMenu() {
   }
 }
 
-// ── YouTube Flow ────────────────────────────────────────────
 
 async function handleYoutubeFlow() {
   let step = 0;
@@ -71,7 +69,6 @@ async function handleYoutubeFlow() {
 
   while (step >= 0) {
     switch (step) {
-      // Step 0: URL
       case 0: {
         const input = await text({
           message: "Cole o link do YouTube:",
@@ -89,7 +86,6 @@ async function handleYoutubeFlow() {
         break;
       }
 
-      // Step 1: Formato (vídeo ou áudio)
       case 1: {
         const input = await select({
           message: "O que você deseja baixar?",
@@ -101,11 +97,10 @@ async function handleYoutubeFlow() {
         });
         if (isCancel(input) || input === BACK) { step--; break; }
         format = input as any;
-        step = format === "video" ? 2 : 3; // pula qualidade se áudio
+        step = format === "video" ? 2 : 3; 
         break;
       }
 
-      // Step 2: Qualidade (só para vídeo)
       case 2: {
         const input = await select({
           message: "Escolha a qualidade do vídeo:",
@@ -123,7 +118,6 @@ async function handleYoutubeFlow() {
         break;
       }
 
-      // Step 3: Pasta de destino
       case 3: {
         const input = await text({
           message: "Onde salvar o download?",
@@ -143,7 +137,6 @@ async function handleYoutubeFlow() {
         break;
       }
 
-      // Step 4: Executar
       case 4: {
         await youtubeCommand(url, { format, quality, outputDir });
         return;
@@ -152,7 +145,6 @@ async function handleYoutubeFlow() {
   }
 }
 
-// ── Video Tools Flow ────────────────────────────────────────
 
 async function handleVideoFlow() {
   let step = 0;
@@ -165,7 +157,7 @@ async function handleVideoFlow() {
 
   while (step >= 0) {
     switch (step) {
-      // Step 0: Ação
+
       case 0: {
         const input = await select({
           message: "O que deseja fazer?",
@@ -182,7 +174,6 @@ async function handleVideoFlow() {
         break;
       }
 
-      // Step 1: Pasta de origem
       case 1: {
         const input = await text({
           message: "Pasta com os vídeos de origem:",
@@ -202,7 +193,6 @@ async function handleVideoFlow() {
         break;
       }
 
-      // Step 2: Pasta de destino
       case 2: {
         const input = await text({
           message: "Pasta de destino (onde salvar):",
@@ -222,7 +212,6 @@ async function handleVideoFlow() {
         break;
       }
 
-      // Step 3: Aviso + Confirmação
       case 3: {
         note(
           color.yellow("⚠️  Todos os vídeos da pasta serão processados!"),
@@ -234,7 +223,6 @@ async function handleVideoFlow() {
         break;
       }
 
-      // Step 4: Opções específicas da ação
       case 4: {
         if (action === "compress") {
           const input = await select({
@@ -282,7 +270,6 @@ async function handleVideoFlow() {
         break;
       }
 
-      // Step 5: Executar
       case 5: {
         await videoCommand({ action, inputDir, outputDir, preset, format, resolution });
         return;
@@ -291,7 +278,6 @@ async function handleVideoFlow() {
   }
 }
 
-// ── Data Flow ───────────────────────────────────────────────
 
 async function handleDataFlow() {
   let step = 0;
@@ -300,7 +286,6 @@ async function handleDataFlow() {
 
   while (step >= 0) {
     switch (step) {
-      // Step 0: Arquivo
       case 0: {
         const input = await text({
           message: "Caminho do arquivo (JSON, CSV ou YAML):",
@@ -316,7 +301,6 @@ async function handleDataFlow() {
         break;
       }
 
-      // Step 1: Formato de saída
       case 1: {
         const input = await select({
           message: "Converter para qual formato?",
@@ -333,7 +317,6 @@ async function handleDataFlow() {
         break;
       }
 
-      // Step 2: Executar
       case 2: {
         console.log("\n");
         await dataCommand(filePath, { to: format });
@@ -343,7 +326,6 @@ async function handleDataFlow() {
   }
 }
 
-// ── Documentos Flow ─────────────────────────────────────────
 
 async function handleDocsFlow() {
   let step = 0;
@@ -353,7 +335,6 @@ async function handleDocsFlow() {
 
   while (step >= 0) {
     switch (step) {
-      // Step 0: Ação
       case 0: {
         const input = await select({
           message: "O que deseja fazer?",
@@ -369,7 +350,6 @@ async function handleDocsFlow() {
         break;
       }
 
-      // Step 1: Arquivo de entrada
       case 1: {
         const input = await text({
           message: "Caminho do arquivo Markdown:",
@@ -393,7 +373,6 @@ async function handleDocsFlow() {
         break;
       }
 
-      // Step 2: Pasta de saída
       case 2: {
         const input = await text({
           message: "Pasta de destino:",
@@ -413,7 +392,6 @@ async function handleDocsFlow() {
         break;
       }
 
-      // Step 3: Executar
       case 3: {
         await docsCommand({ action, inputFile, outputDir });
         return;
@@ -422,7 +400,6 @@ async function handleDocsFlow() {
   }
 }
 
-// ── Image Tools Flow ────────────────────────────────────────
 
 async function handleImageFlow() {
   let step = 0;
@@ -436,7 +413,6 @@ async function handleImageFlow() {
 
   while (step >= 0) {
     switch (step) {
-      // Step 0: Ação
       case 0: {
         const input = await select({
           message: "O que deseja fazer?",
@@ -453,7 +429,6 @@ async function handleImageFlow() {
         break;
       }
 
-      // Step 1: Pasta de origem
       case 1: {
         const input = await text({
           message: "Pasta com as imagens de origem:",
@@ -473,7 +448,6 @@ async function handleImageFlow() {
         break;
       }
 
-      // Step 2: Pasta de destino
       case 2: {
         const input = await text({
           message: "Pasta de destino (onde salvar):",
@@ -493,7 +467,6 @@ async function handleImageFlow() {
         break;
       }
 
-      // Step 3: Aviso + Confirmação
       case 3: {
         note(
           color.yellow("⚠️  Todas as imagens da pasta serão processadas!"),
@@ -505,7 +478,6 @@ async function handleImageFlow() {
         break;
       }
 
-      // Step 4: Opções específicas
       case 4: {
         if (action === "compress") {
           const input = await select({
@@ -563,7 +535,6 @@ async function handleImageFlow() {
         break;
       }
 
-      // Step 5: Executar
       case 5: {
         await imageCommand({ action, inputDir, outputDir, width, height, format, quality });
         return;
