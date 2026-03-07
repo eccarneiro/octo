@@ -1,5 +1,5 @@
 {
-  "name": "octo",
+  "name": "octo-cli",
   "version": "0.0.1",
   "description": "CLI Octo - Automação de conversão de mídia e dados",
   "type": "module",
@@ -11,6 +11,7 @@
     "dev": "bun src/index.ts",
     "start": "bun src/index.ts",
     "build": "bun build ./src/index.ts --compile --outfile octo",
+    "build:all": "bash scripts/build-all.sh",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "echo \"Error: no test specified\" && exit 1"
