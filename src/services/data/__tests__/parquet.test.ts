@@ -25,11 +25,11 @@ describe("Parquet Service", () => {
 
     const schema = inferSchema(sampleLine);
 
-    expect(schema.fields.id.primitiveType).toBe("INT64");
-    expect(schema.fields.name.originalType).toBe("UTF8");
-    expect(schema.fields.score.primitiveType).toBe("DOUBLE");
-    expect(schema.fields.isActive.primitiveType).toBe("BOOLEAN");
-    expect(schema.fields.metadata.originalType).toBe("UTF8");
+    expect(schema.fields.id!.primitiveType).toBe("INT64");
+    expect(schema.fields.name!.originalType).toBe("UTF8");
+    expect(schema.fields.score!.primitiveType).toBe("DOUBLE");
+    expect(schema.fields.isActive!.primitiveType).toBe("BOOLEAN");
+    expect(schema.fields.metadata!.originalType).toBe("UTF8");
   });
 
   test("csvToParquet should correctly parse a CSV and write to Parquet", async () => {

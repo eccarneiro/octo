@@ -16,7 +16,7 @@ export interface VideoOptions {
   action: VideoAction;
   inputDir: string;
   outputDir: string;
-  preset?: "h264" | "h265";
+  preset?: "h264" | "h265" | "web-optimized";
   format?: "mp4" | "mov" | "avi" | "webm";
   resolution?: "1080" | "720" | "480";
 }
@@ -68,13 +68,22 @@ function processVideo(
 
 function configureCompress(
   cmd: ffmpeg.FfmpegCommand,
-  preset: "h264" | "h265",
+  preset: "h264" | "h265" | "web-optimized",
 ): ffmpeg.FfmpegCommand {
   if (preset === "h265") {
     return cmd
       .videoCodec("libx265")
       .addOutputOption("-crf", "28")
       .addOutputOption("-preset", "medium")
+      .audioCodec("aac")
+      .audioBitrate("128k");
+  } else if (preset === "web-optimized") {
+    return cmd
+      .videoCodec("libx264")
+      .addOutputOption("-crf", "23")
+      .addOutputOption("-preset", "medium")
+      .addOutputOption("-movflags", "+faststart") 
+      .addOutputOption("-pix_fmt", "yuv420p") 
       .audioCodec("aac")
       .audioBitrate("128k");
   }
@@ -140,7 +149,7 @@ function getOutputExtension(options: VideoOptions): string {
 
 export const videoCommand = async (options: VideoOptions) => {
   const inputDir = path.resolve(options.inputDir);
-  const outputDir = path.resolve(options.outputDir);
+  const outputDir = path.resolve(options.outputDir || path.join(os.homedir(), "Desktop"));
 
   if (!fs.existsSync(inputDir)) {
     console.error(color.red(`\n❌ Pasta de origem não encontrada: ${inputDir}\n`));

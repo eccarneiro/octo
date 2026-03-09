@@ -63,7 +63,7 @@ async function main() {
     .requiredOption("-a, --action <action>", "Ação: compress, convert, resize")
     .requiredOption("-i, --input <dir>", "Pasta de origem com os vídeos")
     .option("-o, --output <dir>", "Pasta de destino (padrão: ~/Desktop)")
-    .option("-p, --preset <preset>", "Codec: h264, h265 (para compress)", "h264")
+    .option("-p, --preset <preset>", "Codec/Preset: h264, h265, web-optimized (para compress)", "h264")
     .option("-f, --format <format>", "Formato: mp4, mov, avi, webm (para convert)", "mp4")
     .option("-r, --resolution <res>", "Resolução: 1080, 720, 480 (para resize)", "720")
     .action((options) => {
@@ -92,7 +92,7 @@ async function main() {
     .requiredOption("-a, --action <action>", "Ação: compress, convert, resize")
     .requiredOption("-i, --input <dir>", "Pasta de origem com as imagens")
     .option("-o, --output <dir>", "Pasta de destino (padrão: ~/Desktop)")
-    .option("-f, --format <format>", "Formato: png, jpg, webp, avif (para convert)", "webp")
+    .option("-f, --format <format>", "Formato: png, jpg, webp, avif (para convert)", "avif")
     .option("-q, --quality <n>", "Qualidade 1-100 (para compress)", "80")
     .option("-w, --width <n>", "Largura em px (para resize)")
     .option("--height <n>", "Altura em px (para resize)")

@@ -107,7 +107,7 @@ function formatFileSize(bytes: number): string {
 
 export const imageCommand = async (options: ImageOptions) => {
   const inputDir = path.resolve(options.inputDir);
-  const outputDir = path.resolve(options.outputDir);
+  const outputDir = path.resolve(options.outputDir || path.join(os.homedir(), "Desktop"));
 
   if (!fs.existsSync(inputDir)) {
     console.error(color.red(`\n❌ Pasta de origem não encontrada: ${inputDir}\n`));
