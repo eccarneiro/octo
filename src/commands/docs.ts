@@ -4,7 +4,8 @@ import fs from "fs-extra";
 import { Listr } from "listr2";
 import color from "chalk";
 import { outro } from "@clack/prompts";
-import { marked } from "marked";
+import { marked, Renderer } from "marked";
+import puppeteer from "puppeteer";
 
 export type DocsAction = "md-to-html" | "md-to-pdf";
 
@@ -27,6 +28,12 @@ function wrapHtml(body: string, title: string): string {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    });
+  </script>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -78,7 +85,7 @@ ${body}
 
 export const docsCommand = async (options: DocsOptions) => {
   const inputFile = path.resolve(options.inputFile);
-  const outputDir = path.resolve(options.outputDir);
+  const outputDir = path.resolve(options.outputDir || path.join(os.homedir(), "Desktop"));
 
   if (!fs.existsSync(inputFile)) {
     console.error(color.red(`\n❌ Arquivo não encontrado: ${inputFile}\n`));
@@ -99,12 +106,12 @@ export const docsCommand = async (options: DocsOptions) => {
   }
 
   const baseName = path.basename(inputFile, path.extname(inputFile));
-  const ext = options.action === "md-to-html" ? ".html" : ".pdf.html";
+  const ext = options.action === "md-to-html" ? ".html" : ".pdf";
   const outputFile = path.join(outputDir, `${baseName}${ext}`);
 
   console.log(color.dim(`\n📄 Entrada: ${inputFile}`));
   console.log(color.dim(`📂 Saída:   ${outputDir}`));
-  console.log(color.dim(`⚙️  Ação:    ${options.action === "md-to-html" ? "Markdown → HTML" : "Markdown → PDF (HTML imprimível)"}\n`));
+  console.log(color.dim(`⚙️  Ação:    ${options.action === "md-to-html" ? "Markdown → HTML" : "Markdown → PDF (Puppeteer Engine)"}\n`));
 
   const tasks = new Listr([
     {
@@ -117,16 +124,45 @@ export const docsCommand = async (options: DocsOptions) => {
     {
       title: "Convertendo para HTML...",
       task: async (ctx, task) => {
-        const htmlBody = await marked(ctx.rawContent);
+        // Intercepta e renderiza blocos de Mermaid.js corretamente
+        const renderer = new Renderer();
+        const originalCode = renderer.code.bind(renderer);
+        renderer.code = function (...args: any[]) {
+          const codeOptions = args[0];
+          const text = typeof codeOptions === "string" ? codeOptions : codeOptions.text;
+          const lang = typeof codeOptions === "string" ? args[1] : codeOptions.lang;
+          
+          if (lang === "mermaid") {
+            return `<div class="mermaid">\n${text}\n</div>\n`;
+          }
+          return originalCode.apply(this, args as any);
+        };
+
+        const htmlBody = await marked.parse(ctx.rawContent, { renderer });
         ctx.html = wrapHtml(htmlBody, ctx.title);
-        task.title = "HTML gerado com sucesso";
+        task.title = "Estrutura HTML gerada com sucesso";
       },
     },
     {
-      title: "Salvando arquivo...",
+      title: options.action === "md-to-html" ? "Salvando HTML..." : "Renderizando PDF com Puppeteer...",
       task: async (ctx, task) => {
-        await fs.writeFile(outputFile, ctx.html);
-        task.title = color.green(`✓ Salvo: ${path.basename(outputFile)}`);
+        if (options.action === "md-to-html") {
+          await fs.writeFile(outputFile, ctx.html);
+          task.title = color.green(`✓ HTML Salvo: ${path.basename(outputFile)}`);
+        } else {
+          task.output = "Inicializando Headless Browser...";
+          const browser = await puppeteer.launch({ headless: true });
+          const page = await browser.newPage();
+          
+          task.output = "Injetando código e aguardando diagramas (Mermaid)...";
+          await page.setContent(ctx.html, { waitUntil: "networkidle0" });
+          
+          task.output = "Imprimindo PDF...";
+          await page.pdf({ path: outputFile, format: "A4", printBackground: true });
+          
+          await browser.close();
+          task.title = color.green(`✓ PDF Renderizado com sucesso: ${path.basename(outputFile)}`);
+        }
       },
     },
   ]);
@@ -134,9 +170,7 @@ export const docsCommand = async (options: DocsOptions) => {
   try {
     await tasks.run();
     if (options.action === "md-to-pdf") {
-      outro(
-        color.green(`🎉 Arquivo salvo! Abra no navegador e use Ctrl+P para salvar como PDF.`),
-      );
+      outro(color.green(`🎉 PDF gerado com diagramas suportados nativamente e salvo em: ${outputFile}`));
     } else {
       outro(color.green(`🎉 HTML gerado com sucesso em: ${outputFile}`));
     }

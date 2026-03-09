@@ -35,6 +35,7 @@
     "listr2": "^8.0.0",
     "marked": "^17.0.4",
     "p-queue": "^9.1.0",
+    "puppeteer": "^24.38.0",
     "sharp": "^0.33.2",
     "youtube-dl-exec": "^3.0.30",
     "zod": "^3.22.4"
