@@ -9,6 +9,7 @@ import { youtubeCommand } from "./commands/youtube.js";
 import { videoCommand } from "./commands/video.js";
 import { docsCommand } from "./commands/docs.js";
 import { imageCommand } from "./commands/image.js";
+import { aiCommand } from "./commands/ai.js";
 
 const program = new Command();
 
@@ -105,6 +106,25 @@ async function main() {
         quality: parseInt(options.quality),
         width: options.width ? parseInt(options.width) : undefined,
         height: options.height ? parseInt(options.height) : undefined,
+      });
+    });
+  program
+    .command("ai")
+    .description("Ferramentas de pré-processamento para Machine Learning / Data Science")
+    .requiredOption("-a, --action <action>", "Ação: prepare-images, spectrogram, split-dataset")
+    .requiredOption("-i, --input <dir>", "Pasta de origem com o dataset")
+    .option("-o, --output <dir>", "Pasta de destino")
+    .option("--size <size>", "Dimensões para normatizar imagens (ex: 224x224)", "224x224")
+    .option("--grayscale", "Converter imagens para tons de cinza", false)
+    .option("--ratios <ratios>", "Proporções para o split-dataset (train-test-val, ex: 80-10-10)", "80-10-10")
+    .action((options) => {
+      aiCommand({
+        action: options.action,
+        inputDir: options.input,
+        outputDir: options.output,
+        size: options.size,
+        grayscale: options.grayscale,
+        ratios: options.ratios,
       });
     });
 
