@@ -6,9 +6,10 @@ import { outro } from "@clack/prompts";
 import { Parser } from "json2csv";
 import csv from "csvtojson";
 import yaml from "js-yaml";
+import { jsonToParquet, csvToParquet } from "../services/data/parquet.js";
 
 interface DataOptions {
-  to: "json" | "csv" | "yaml";
+  to: "json" | "csv" | "yaml" | "parquet";
 }
 
 export const dataCommand = async (filePath: string, options: DataOptions) => {
@@ -28,8 +29,23 @@ export const dataCommand = async (filePath: string, options: DataOptions) => {
 
   const tasks = new Listr([
     {
-      title: `Lendo arquivo original (${ext})`,
-      task: async () => {
+      title: `Processando arquivo original (${ext})`,
+      task: async (ctx, task) => {
+        // Fluxos de Streaming para Parquet (Evitando On-Memory)
+        if (options.to === "parquet") {
+          task.title = `Convertendo ${ext} para PARQUET (Streaming) ...`;
+          if (ext === ".csv") {
+            await csvToParquet(absolutePath, outputPath);
+          } else if (ext === ".json") {
+            await jsonToParquet(absolutePath, outputPath);
+          } else {
+            throw new Error(`Conversão de ${ext} para Parquet ainda não suportada.`);
+          }
+          return; // Para o fluxo Parquet, o arquivo já está salvo.
+        }
+
+        // Fluxos Tradicionais (On-Memory)
+        task.title = `Lendo arquivo original (${ext})`;
         const rawContent = await fs.readFile(absolutePath, "utf-8");
 
         if (ext === ".json") {
@@ -45,6 +61,7 @@ export const dataCommand = async (filePath: string, options: DataOptions) => {
     },
     {
       title: `Convertendo para ${options.to.toUpperCase()}`,
+      skip: () => options.to === "parquet", // Parquet já escreve no stream
       task: async () => {
         if (options.to === "csv") {
           const parser = new Parser();
@@ -58,6 +75,7 @@ export const dataCommand = async (filePath: string, options: DataOptions) => {
     },
     {
       title: "Salvando arquivo",
+      skip: () => options.to === "parquet", // Parquet já salvou no stream
       task: async () => {
         await fs.writeFile(outputPath, dataPayload);
       },

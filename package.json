@@ -14,10 +14,11 @@
     "build:all": "bash scripts/build-all.sh",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "bun test"
   },
   "dependencies": {
     "@clack/prompts": "^1.0.0",
+    "@dsnp/parquetjs": "^1.8.7",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@types/marked": "^6.0.0",
     "boxen": "^8.0.1",
@@ -32,6 +33,7 @@
     "json2csv": "^6.0.0-alpha.2",
     "listr2": "^8.0.0",
     "marked": "^17.0.4",
+    "p-queue": "^9.1.0",
     "sharp": "^0.33.2",
     "youtube-dl-exec": "^3.0.30",
     "zod": "^3.22.4"

@@ -37,7 +37,7 @@ async function main() {
     .command("data")
     .description("Converte arquivos de dados (JSON <-> CSV <-> YAML)")
     .argument("<file>", "Arquivo de entrada")
-    .requiredOption("-t, --to <format>", "Formato de saída: json, csv, yaml")
+    .requiredOption("-t, --to <format>", "Formato de saída: json, csv, yaml, parquet")
     .action((file, options) => dataCommand(file, { to: options.to }));
   program
     .command("youtube")
