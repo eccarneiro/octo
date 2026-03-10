@@ -16,7 +16,7 @@ export interface VideoOptions {
   action: VideoAction;
   inputDir: string;
   outputDir: string;
-  preset?: "h264" | "h265";
+  preset?: "h264" | "h265" | "web-optimized";
   format?: "mp4" | "mov" | "avi" | "webm";
   resolution?: "1080" | "720" | "480";
 }
@@ -37,10 +37,17 @@ function getVideoFiles(dir: string): string[] {
     .map((f) => path.join(dir, f));
 }
 
-function buildProgressBar(percent: number, width = 25): string {
+import gradient from "gradient-string";
+
+function buildProgressBar(percent: number, width = 30): string {
   const filled = Math.round((percent / 100) * width);
   const empty = width - filled;
-  return color.cyan("█".repeat(filled)) + color.dim("░".repeat(empty));
+  const gradientFn = gradient(["#00f2fe", "#4facfe", "#f093fb", "#f5576c"]);
+  
+  const filledStr = gradientFn("█".repeat(filled));
+  const emptyStr = color.dim("░".repeat(empty));
+  
+  return filledStr + emptyStr;
 }
 
 function processVideo(
@@ -68,13 +75,22 @@ function processVideo(
 
 function configureCompress(
   cmd: ffmpeg.FfmpegCommand,
-  preset: "h264" | "h265",
+  preset: "h264" | "h265" | "web-optimized",
 ): ffmpeg.FfmpegCommand {
   if (preset === "h265") {
     return cmd
       .videoCodec("libx265")
       .addOutputOption("-crf", "28")
       .addOutputOption("-preset", "medium")
+      .audioCodec("aac")
+      .audioBitrate("128k");
+  } else if (preset === "web-optimized") {
+    return cmd
+      .videoCodec("libx264")
+      .addOutputOption("-crf", "23")
+      .addOutputOption("-preset", "medium")
+      .addOutputOption("-movflags", "+faststart") 
+      .addOutputOption("-pix_fmt", "yuv420p") 
       .audioCodec("aac")
       .audioBitrate("128k");
   }
@@ -140,7 +156,7 @@ function getOutputExtension(options: VideoOptions): string {
 
 export const videoCommand = async (options: VideoOptions) => {
   const inputDir = path.resolve(options.inputDir);
-  const outputDir = path.resolve(options.outputDir);
+  const outputDir = path.resolve(options.outputDir || path.join(os.homedir(), "Desktop"));
 
   if (!fs.existsSync(inputDir)) {
     console.error(color.red(`\n❌ Pasta de origem não encontrada: ${inputDir}\n`));
@@ -166,10 +182,10 @@ export const videoCommand = async (options: VideoOptions) => {
   const actionLabel = getActionLabel(options);
   const ext = getOutputExtension(options);
 
-  console.log(color.dim(`\n📂 Origem:  ${inputDir}`));
-  console.log(color.dim(`📂 Destino: ${outputDir}`));
-  console.log(color.dim(`⚙️  Ação:    ${actionLabel}`));
-  console.log(color.dim(`🎬 Vídeos:  ${videoFiles.length} arquivo(s)\n`));
+  console.log(color.magenta(`\n Origem:  ${inputDir}`));
+  console.log(color.cyan(` Destino: ${outputDir}`));
+  console.log(color.yellow(` Ação:    ${actionLabel}`));
+  console.log(color.green(` Vídeos:  ${videoFiles.length} arquivo(s)\n`));
 
   const tasks = new Listr(
     videoFiles.map((file, index) => {
