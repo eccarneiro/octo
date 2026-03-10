@@ -37,10 +37,17 @@ function getVideoFiles(dir: string): string[] {
     .map((f) => path.join(dir, f));
 }
 
-function buildProgressBar(percent: number, width = 25): string {
+import gradient from "gradient-string";
+
+function buildProgressBar(percent: number, width = 30): string {
   const filled = Math.round((percent / 100) * width);
   const empty = width - filled;
-  return color.cyan("█".repeat(filled)) + color.dim("░".repeat(empty));
+  const gradientFn = gradient(["#00f2fe", "#4facfe", "#f093fb", "#f5576c"]);
+  
+  const filledStr = gradientFn("█".repeat(filled));
+  const emptyStr = color.dim("░".repeat(empty));
+  
+  return filledStr + emptyStr;
 }
 
 function processVideo(
@@ -175,10 +182,10 @@ export const videoCommand = async (options: VideoOptions) => {
   const actionLabel = getActionLabel(options);
   const ext = getOutputExtension(options);
 
-  console.log(color.dim(`\n📂 Origem:  ${inputDir}`));
-  console.log(color.dim(`📂 Destino: ${outputDir}`));
-  console.log(color.dim(`⚙️  Ação:    ${actionLabel}`));
-  console.log(color.dim(`🎬 Vídeos:  ${videoFiles.length} arquivo(s)\n`));
+  console.log(color.magenta(`\n Origem:  ${inputDir}`));
+  console.log(color.cyan(` Destino: ${outputDir}`));
+  console.log(color.yellow(` Ação:    ${actionLabel}`));
+  console.log(color.green(` Vídeos:  ${videoFiles.length} arquivo(s)\n`));
 
   const tasks = new Listr(
     videoFiles.map((file, index) => {

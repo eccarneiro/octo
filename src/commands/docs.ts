@@ -109,9 +109,9 @@ export const docsCommand = async (options: DocsOptions) => {
   const ext = options.action === "md-to-html" ? ".html" : ".pdf";
   const outputFile = path.join(outputDir, `${baseName}${ext}`);
 
-  console.log(color.dim(`\n📄 Entrada: ${inputFile}`));
-  console.log(color.dim(`📂 Saída:   ${outputDir}`));
-  console.log(color.dim(`⚙️  Ação:    ${options.action === "md-to-html" ? "Markdown → HTML" : "Markdown → PDF (Puppeteer Engine)"}\n`));
+  console.log(color.magenta(`\n Entrada: ${inputFile}`));
+  console.log(color.cyan(` Saída:   ${outputDir}`));
+  console.log(color.yellow(` Ação:    ${options.action === "md-to-html" ? "Markdown → HTML" : "Markdown → PDF"}\n`));
 
   const tasks = new Listr([
     {

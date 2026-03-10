@@ -20,22 +20,24 @@ function backOption(label = "← Voltar") {
 }
 
 
+import gradient from "gradient-string";
+
 export async function showMainMenu() {
   while (true) {
     const action = await select({
-      message: "Escolha um módulo:",
+      message: gradient(["#00f2fe", "#4facfe"])("Escolha um módulo:"),
       options: [
-        { value: "video", label: "🎬 Vídeo Tools", hint: "Comprimir, Converter e Redimensionar" },
-        { value: "image", label: "🖼️  Imagem Tools", hint: "Redimensionar, Converter e Comprimir" },
-        { value: "youtube", label: "📺 YouTube Downloader", hint: "Baixar vídeo ou áudio" },
-        { value: "docs", label: "📄 Documentos", hint: "Markdown → HTML / PDF" },
-        { value: "data", label: "💾 Dados & Utils", hint: "JSON, CSV, YAML" },
-        { value: "exit", label: "🚪 Sair" },
+        { value: "video", label: color.cyan("Video Tools"), hint: color.dim("Comprimir, Converter e Redimensionar") },
+        { value: "image", label: color.magenta("Imagem Tools"), hint: color.dim("Redimensionar, Converter e Comprimir") },
+        { value: "youtube", label: color.red("YouTube Downloader"), hint: color.dim("Baixar vídeo ou áudio") },
+        { value: "docs", label: color.green("Documentos"), hint: color.dim("Markdown → HTML / PDF") },
+        { value: "data", label: color.yellow("Dados & Utils"), hint: color.dim("JSON, CSV, YAML") },
+        { value: "exit", label: color.gray("Sair") },
       ],
     });
 
     if (isCancel(action) || action === "exit") {
-      cancel("Até a próxima! 👋");
+      cancel(color.magenta("Até a próxima! 👋"));
       process.exit(0);
     }
 
@@ -90,8 +92,8 @@ async function handleYoutubeFlow() {
         const input = await select({
           message: "O que você deseja baixar?",
           options: [
-            { value: "video", label: "🎬 Vídeo (MP4)", hint: "Baixa vídeo e áudio juntos" },
-            { value: "audio", label: "🎵 Áudio (MP3)", hint: "Extrai apenas o som" },
+            { value: "video", label: "Vídeo (MP4)", hint: "Baixa vídeo e áudio juntos" },
+            { value: "audio", label: "Áudio (MP3)", hint: "Extrai apenas o som" },
             backOption(),
           ],
         });
@@ -105,10 +107,10 @@ async function handleYoutubeFlow() {
         const input = await select({
           message: "Escolha a qualidade do vídeo:",
           options: [
-            { value: "best", label: "🏆 Melhor disponível", hint: "Máxima qualidade" },
-            { value: "1080", label: "📺 1080p (Full HD)", hint: "Recomendado" },
-            { value: "720", label: "📱 720p (HD)", hint: "Bom equilíbrio" },
-            { value: "480", label: "💾 480p (SD)", hint: "Arquivo menor" },
+            { value: "best", label: "Melhor disponível", hint: "Máxima qualidade" },
+            { value: "1080", label: "1080p (Full HD)", hint: "Recomendado" },
+            { value: "720", label: "720p (HD)", hint: "Bom equilíbrio" },
+            { value: "480", label: "480p (SD)", hint: "Arquivo menor" },
             backOption(),
           ],
         });
@@ -162,9 +164,9 @@ async function handleVideoFlow() {
         const input = await select({
           message: "O que deseja fazer?",
           options: [
-            { value: "compress", label: "🗜️  Comprimir", hint: "Reduz tamanho do arquivo (H.264/H.265)" },
-            { value: "convert", label: "🔄 Converter formato", hint: "MP4, MOV, AVI, WebM" },
-            { value: "resize", label: "📏 Redimensionar", hint: "1080p, 720p, 480p" },
+            { value: "compress", label: "Comprimir", hint: "Reduz tamanho do arquivo (H.264/H.265)" },
+            { value: "convert", label: "Converter formato", hint: "MP4, MOV, AVI, WebM" },
+            { value: "resize", label: "Redimensionar", hint: "1080p, 720p, 480p" },
             backOption(),
           ],
         });
@@ -214,8 +216,8 @@ async function handleVideoFlow() {
 
       case 3: {
         note(
-          color.yellow("⚠️  Todos os vídeos da pasta serão processados!"),
-          "🎥 Atenção",
+          color.yellow("Todos os vídeos da pasta serão processados!"),
+          "Atenção",
         );
         const shouldContinue = await confirm({ message: "Deseja continuar?" });
         if (isCancel(shouldContinue) || !shouldContinue) { step--; break; }
@@ -256,9 +258,9 @@ async function handleVideoFlow() {
           const input = await select({
             message: "Qual resolução?",
             options: [
-              { value: "1080", label: "📺 1080p (Full HD)" },
-              { value: "720", label: "📱 720p (HD)" },
-              { value: "480", label: "💾 480p (SD)" },
+              { value: "1080", label: "1080p (Full HD)" },
+              { value: "720", label: "720p (HD)" },
+              { value: "480", label: "480p (SD)" },
               backOption(),
             ],
           });
@@ -339,8 +341,8 @@ async function handleDocsFlow() {
         const input = await select({
           message: "O que deseja fazer?",
           options: [
-            { value: "md-to-html", label: "🌐 Markdown → HTML", hint: "Gera página web estilizada" },
-            { value: "md-to-pdf", label: "📄 Markdown → PDF", hint: "HTML imprimível (Ctrl+P no navegador)" },
+            { value: "md-to-html", label: "Markdown → HTML", hint: "Gera página web estilizada" },
+            { value: "md-to-pdf", label: "Markdown → PDF", hint: "HTML imprimível (Ctrl+P no navegador)" },
             backOption(),
           ],
         });
@@ -417,9 +419,9 @@ async function handleImageFlow() {
         const input = await select({
           message: "O que deseja fazer?",
           options: [
-            { value: "compress", label: "🗜️  Comprimir", hint: "Reduz tamanho do arquivo" },
-            { value: "convert", label: "🔄 Converter formato", hint: "PNG, JPG, WebP, AVIF" },
-            { value: "resize", label: "📏 Redimensionar", hint: "Alterar dimensões" },
+            { value: "compress", label: "Comprimir", hint: "Reduz tamanho do arquivo" },
+            { value: "convert", label: "Converter formato", hint: "PNG, JPG, WebP, AVIF" },
+            { value: "resize", label: "Redimensionar", hint: "Alterar dimensões" },
             backOption(),
           ],
         });
@@ -469,8 +471,8 @@ async function handleImageFlow() {
 
       case 3: {
         note(
-          color.yellow("⚠️  Todas as imagens da pasta serão processadas!"),
-          "🖼️ Atenção",
+          color.yellow("Todas as imagens da pasta serão processadas!"),
+          "Atenção",
         );
         const shouldContinue = await confirm({ message: "Deseja continuar?" });
         if (isCancel(shouldContinue) || !shouldContinue) { step--; break; }
@@ -483,10 +485,10 @@ async function handleImageFlow() {
           const input = await select({
             message: "Qualidade da compressão:",
             options: [
-              { value: "90", label: "🏆 Alta (90%)", hint: "Pouca perda de qualidade" },
-              { value: "80", label: "⚡ Média (80%)", hint: "Bom equilíbrio" },
-              { value: "60", label: "💾 Baixa (60%)", hint: "Arquivo bem menor" },
-              { value: "40", label: "📦 Mínima (40%)", hint: "Máxima redução" },
+              { value: "90", label: "Alta (90%)", hint: "Pouca perda de qualidade" },
+              { value: "80", label: "Média (80%)", hint: "Bom equilíbrio" },
+              { value: "60", label: "Baixa (60%)", hint: "Arquivo bem menor" },
+              { value: "40", label: "Mínima (40%)", hint: "Máxima redução" },
               backOption(),
             ],
           });

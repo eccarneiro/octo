@@ -196,12 +196,17 @@ function parseProgressLine(line: string): string | null {
   return null;
 }
 
-function buildProgressBar(percent: number, width = 25): string {
+import gradient from "gradient-string";
+
+function buildProgressBar(percent: number, width = 30): string {
   const filled = Math.round((percent / 100) * width);
   const empty = width - filled;
-  const filledBar = "█".repeat(filled);
-  const emptyBar = "░".repeat(empty);
-  return color.cyan(filledBar) + color.dim(emptyBar);
+  const gradientFn = gradient(["#00f2fe", "#4facfe", "#f093fb", "#f5576c"]);
+  
+  const filledStr = filled > 0 ? gradientFn("█".repeat(filled)) : "";
+  const emptyStr = color.dim("░".repeat(empty));
+  
+  return filledStr + emptyStr;
 }
 
 
@@ -313,7 +318,7 @@ export const youtubeCommand = async (url: string, options: YoutubeOptions) => {
 
   console.log(
     color.dim(
-      `\n🔗 URL: ${url}\n📂 Saída: ${downloadDir}\n⚙️  Modo: ${options.format.toUpperCase()}${options.format === "video" ? ` (${quality})` : ""}\n`,
+      `\n URL: ${url}\n Saída: ${downloadDir}\n Modo: ${options.format.toUpperCase()}${options.format === "video" ? ` (${quality})` : ""}\n`,
     ),
   );
 

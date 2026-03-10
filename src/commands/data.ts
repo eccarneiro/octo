@@ -86,8 +86,8 @@ export const dataCommand = async (filePath: string, options: DataOptions) => {
 
   try {
     console.log(
-      color.dim(
-        `\n📄 Processando: ${name}${ext} -> ${options.to.toUpperCase()}`,
+      color.magenta(
+        `\n Processando: ${name}${ext} -> ${options.to.toUpperCase()}`,
       ),
     );
     await tasks.run();

@@ -11,22 +11,34 @@ import { docsCommand } from "./commands/docs.js";
 import { imageCommand } from "./commands/image.js";
 import { aiCommand } from "./commands/ai.js";
 
+import boxen from "boxen";
+import gradient from "gradient-string";
+
 const program = new Command();
 
 function showWelcomeBanner() {
   console.clear();
 
-  console.log(
-    color.cyan(
-      figlet.textSync("OCTO CLI", {
-        font: "Slant",
-        horizontalLayout: "default",
-        verticalLayout: "default",
-      }),
-    ),
-  );
+  const text = figlet.textSync("OCTO CLI", {
+    font: "Slant",
+    horizontalLayout: "default",
+    verticalLayout: "default",
+  });
 
-  console.log(color.dim(" v0.0.1 • The Ultimate Converter Engine\n"));
+  const bannerText = gradient(["#00f2fe", "#4facfe", "#f093fb", "#f5576c"])(text);
+  
+  const versionText = color.dim("v0.0.1 • The Ultimate Converter Engine");
+  
+  const box = boxen(`${bannerText}\n\n${versionText}`, {
+    padding: 1,
+    margin: 1,
+    borderStyle: "round",
+    borderColor: "cyan",
+    align: "center",
+    backgroundColor: "#000000",
+  });
+
+  console.log(box);
 }
 
 async function main() {

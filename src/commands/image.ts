@@ -132,10 +132,10 @@ export const imageCommand = async (options: ImageOptions) => {
   const actionLabel = getActionLabel(options);
   const newExt = getOutputExtension(options);
 
-  console.log(color.dim(`\n📂 Origem:  ${inputDir}`));
-  console.log(color.dim(`📂 Destino: ${outputDir}`));
-  console.log(color.dim(`⚙️  Ação:    ${actionLabel}`));
-  console.log(color.dim(`🖼️  Imagens: ${imageFiles.length} arquivo(s)\n`));
+  console.log(color.magenta(`\n Origem:  ${inputDir}`));
+  console.log(color.cyan(` Destino: ${outputDir}`));
+  console.log(color.yellow(` Ação:    ${actionLabel}`));
+  console.log(color.green(` Imagens: ${imageFiles.length} arquivo(s)\n`));
 
   let totalSaved = 0;
 
